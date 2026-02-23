@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: onboarding-postgres
+    environment:
+      POSTGRES_DB: onboarding_db
+      POSTGRES_USER: onboarding_user
+      POSTGRES_PASSWORD: onboarding_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - onboarding-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.1
+    container_name: onboarding-keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/onboarding_db
+      KC_DB_USERNAME: onboarding_user
+      KC_DB_PASSWORD: onboarding_pass
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - onboarding-network
+
+networks:
+  onboarding-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
